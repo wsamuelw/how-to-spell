@@ -7,6 +7,9 @@
   <meta name="description" content="Kids tap the mic, say a word, and see how to spell it. Zero setup, zero ads, zero data collection.">
   <meta name="theme-color" content="#fafafa">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎤</text></svg>">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
   <!-- Open Graph -->
   <meta property="og:title" content="How to Spell">
@@ -778,6 +781,11 @@
         startListening();
       }
     });
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
   </script>
 
 </body>
