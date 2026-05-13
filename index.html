@@ -1,22 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-YG9J93G0R4"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-YG9J93G0R4', {
-    send_page_view: false
-  });
-</script>
-  
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>How to Spell</title>
+  <meta name="description" content="Kids tap the mic, say a word, and see how to spell it. Zero setup, zero ads, zero data collection.">
+  <meta name="theme-color" content="#fafafa">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎤</text></svg>">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="How to Spell">
+  <meta property="og:description" content="Kids tap the mic, say a word, and see how to spell it. Zero setup, zero ads.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://wsamuelw.github.io/how-to-spell/">
+  <meta property="og:image" content="https://github.com/user-attachments/assets/1ec65231-66b9-49d7-8af0-b396e2282626">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to Spell">
+  <meta name="twitter:description" content="Kids tap the mic, say a word, and see how to spell it.">
+
+  <!-- Security -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://www.google-analytics.com https://analytics.google.com; img-src 'self' https://www.google-analytics.com data:; font-src 'none';">
+  <meta http-equiv="Permissions-Policy" content="microphone=(self)">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YG9J93G0R4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-YG9J93G0R4', { send_page_view: false });
+  </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -45,9 +60,9 @@
     }
 
     .title {
-      font-size: 1.125rem;
+      font-size: 1.25rem;
       font-weight: 500;
-      color: #86868b;
+      color: #636366;
       letter-spacing: -0.01em;
     }
 
@@ -70,6 +85,11 @@
       transform: scale(0.93);
     }
 
+    .mic-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
     .mic-btn.listening {
       background: #ff3b30;
       animation: breathe 2s ease-in-out infinite;
@@ -88,7 +108,7 @@
 
     .listening-text {
       font-size: 0.875rem;
-      color: #86868b;
+      color: #636366;
       opacity: 0;
       transition: opacity 0.2s ease;
       height: 1.2em;
@@ -160,11 +180,11 @@
     }
 
     .tap-hint {
-      font-size: 0.8125rem;
-      color: #aeaeb2;
+      font-size: 1rem;
+      color: #86868b;
       margin-top: 4rem;
       opacity: 0;
-      animation: fadeIn 0.3s ease 0.4s both;
+      animation: fadeIn 0.3s ease 0.1s both;
     }
 
     @keyframes fadeIn {
@@ -172,6 +192,7 @@
     }
 
     /* Error */
+
     .error-msg {
       position: fixed;
       bottom: 12%;
@@ -196,55 +217,6 @@
       opacity: 1;
     }
 
-    /* Skeleton Loading Styles */
-    .skeleton-loader {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 90%;
-      max-width: 400px;
-      padding: 2rem;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      z-index: 5;
-    }
-
-    .skeleton-line {
-      height: 24px;
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-      background-size: 200% 100%;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      animation: shimmer 1.5s infinite;
-    }
-
-    .skeleton-title {
-      height: 48px;
-      width: 80%;
-      margin-bottom: 1.5rem;
-    }
-
-    .skeleton-subtitle {
-      height: 32px;
-      width: 60%;
-      margin-bottom: 1rem;
-    }
-
-    .skeleton-text {
-      height: 20px;
-      width: 100%;
-    }
-
-    .skeleton-text.short {
-      width: 40%;
-    }
-
-    @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
   </style>
 </head>
 <body>
@@ -252,33 +224,26 @@
   <div class="container">
     <div class="title">Say. How to spell ... ?</div>
 
-    <button class="mic-btn" id="micBtn" aria-label="Tap to speak">
+    <button class="mic-btn" id="micBtn" aria-label="Tap to speak" disabled>
       <svg class="mic-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
         <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
       </svg>
     </button>
 
-    <div class="listening-text" id="listeningText">Listening...</div>
+    <div class="listening-text" id="listeningText" aria-live="polite">Listening...</div>
   </div>
 
   <div class="waveform-container" id="waveformContainer">
     <canvas id="waveformCanvas"></canvas>
   </div>
 
-  <div class="word-stage" id="wordStage">
-    <!-- Skeleton Loading State -->
-    <div id="skeletonLoader" class="skeleton-loader" style="display: none;">
-      <div class="skeleton-line skeleton-title"></div>
-      <div class="skeleton-line skeleton-subtitle"></div>
-      <div class="skeleton-line skeleton-text short"></div>
-    </div>
-    
-    <div class="display-word" id="displayWord"></div>
+  <div class="word-stage" id="wordStage" tabindex="-1">
+    <div class="display-word" id="displayWord" aria-live="polite" role="status"></div>
     <div class="tap-hint" id="tapHint" style="display:none">Tap to try another word</div>
   </div>
 
-  <div class="error-msg" id="errorMsg"></div>
+  <div class="error-msg" id="errorMsg" role="alert" aria-live="assertive"></div>
 
   <script>
     // === Google Analytics Event Tracking ===
@@ -294,9 +259,8 @@
       const sessionDuration = Math.round((Date.now() - sessionStartTime) / 1000);
       trackEvent('session_duration', {
         duration_seconds: sessionDuration,
-        browser: navigator.userAgent,
-        device_type: getDeviceType(),
-        platform: navigator.platform
+        browser: browserInfo.browser,
+        device_type: deviceType
       });
     });
 
@@ -366,9 +330,9 @@
         if (!response.ok) throw new Error('Failed to load blocked words');
         BLOCKED_CATEGORIES = await response.json();
         
-        // Build optimized lookup set from all categories
+        // Build optimized lookup set from all categories (normalised)
         BLOCKED_WORDS_SET = new Set(
-          Object.values(BLOCKED_CATEGORIES).flat()
+          Object.values(BLOCKED_CATEGORIES).flat().map(w => w.toLowerCase().replace(/[^a-z]/g, ''))
         );
       } catch (error) {
         console.error('Error loading blocked words:', error);
@@ -398,9 +362,8 @@
         .replace(/3/g, 'e')
         .replace(/4/g, 'a')
         .replace(/5/g, 's')
-        .replace(/7/g, 't')
-        .replace(/\$/g, 's');
-      
+        .replace(/7/g, 't');
+
       if (BLOCKED_WORDS_SET.has(leetspeak)) return true;
       
       return false;
@@ -415,31 +378,33 @@
     const errorMsg = document.getElementById('errorMsg');
     const waveformContainer = document.getElementById('waveformContainer');
     const waveformCanvas = document.getElementById('waveformCanvas');
-    const skeletonLoader = document.getElementById('skeletonLoader');
 
     let isListening = false;
     let isAnimating = false;
     let audioContext = null;
     let analyser = null;
     let microphone = null;
+    let mediaStream = null;
     let animationId = null;
-    let currentErrorMessage = '';
+    let canvasInitialized = false;
+    let cachedGradient = null;
+    let dataArray = null;
 
-    // Error message mapping
+    // Error message mapping (kid-friendly)
     const errorMessages = {
-        'not-allowed': 'Microphone access denied. Please allow microphone access in your browser settings.',
-        'no-microphone': 'No microphone found. Please connect a microphone and try again.',
-        'network': 'Network error. Please check your internet connection and try again.',
-        'no-speech': 'No speech detected. Please try speaking more clearly.',
-        'audio-capture': 'Unable to capture audio. Please refresh the page and try again.',
-        'default': 'An unexpected error occurred. Please try again.'
+        'not-allowed': "Oops! I need your grown-up to let me use the microphone.",
+        'no-microphone': "I can't hear you! Is your microphone working?",
+        'network': "Hmm, I can't reach the internet. Ask a grown-up for help?",
+        'no-speech': "I didn't hear anything. Try talking a bit louder!",
+        'audio-capture': "Something's wrong with the microphone. Let's try again!",
+        'default': "Something went wrong. Let's try again!"
     };
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    // Load blocked words before initializing speech recognition
+    // Load blocked words before enabling the mic
     loadBlockedWords().then(() => {
-      console.log('Blocked words loaded successfully');
+      micBtn.disabled = false;
     });
 
     if (!SpeechRecognition) {
@@ -533,50 +498,45 @@
       stopListening();
 
       if (isWordBlocked(word)) {
-        showError("Let's try a different word!");
+        showError("That's a tricky one! Try saying a different word.");
         isAnimating = false;
         return;
       }
 
-      // Track word requested
+      // Track word requested (no PII — only word length)
       trackEvent('word_requested', {
-        word: word,
         word_length: word.length,
         browser: browserInfo.browser,
         device_type: deviceType
       });
 
-      // Show skeleton loader while preparing to display word
-      skeletonLoader.style.display = 'block';
-      displayWord.textContent = '';
-      
-      // Small delay to show skeleton animation for smoother UX
-      await new Promise(resolve => setTimeout(resolve, 600));
-      
-      skeletonLoader.style.display = 'none';
       wordStage.classList.add('active');
-      tapHint.style.display = 'none';
       displayWord.textContent = word.charAt(0).toUpperCase() + word.slice(1);
       tapHint.style.display = 'block';
+      wordStage.focus();
 
-      await waitForTap();
+      await waitForTapOrKey();
       hideWordStage();
       isAnimating = false;
     }
 
-    function waitForTap() {
+    function waitForTapOrKey() {
       return new Promise((resolve) => {
-        const handler = () => {
+        const handler = (e) => {
+          if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+          e.preventDefault();
           wordStage.removeEventListener('click', handler);
+          wordStage.removeEventListener('keydown', handler);
           resolve();
         };
         wordStage.addEventListener('click', handler);
+        wordStage.addEventListener('keydown', handler);
       });
     }
 
     // === UI ===
     async function startListening() {
-      if (isAnimating) return;
+      if (isAnimating || isListening) return;
       try {
         recognition.start();
         isListening = true;
@@ -584,10 +544,14 @@
         listeningText.classList.add('show');
         waveformContainer.classList.add('show');
         await initAudioVisualization();
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Failed to start recognition:', e);
+        stopListening();
+      }
     }
 
     function stopListening() {
+      if (!isListening && !micBtn.classList.contains('listening')) return;
       try { recognition.stop(); } catch (e) {}
       isListening = false;
       micBtn.classList.remove('listening');
@@ -599,7 +563,6 @@
     function hideWordStage() {
       wordStage.classList.remove('active');
       tapHint.style.display = 'none';
-      skeletonLoader.style.display = 'none';
       displayWord.textContent = '';
     }
 
@@ -614,18 +577,22 @@
       try {
         if (!audioContext) {
           audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioContext.state === 'suspended') {
+            await audioContext.resume();
+          }
           analyser = audioContext.createAnalyser();
           analyser.fftSize = 256;
-          
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          microphone = audioContext.createMediaStreamSource(stream);
+
+          mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          microphone = audioContext.createMediaStreamSource(mediaStream);
           microphone.connect(analyser);
+          dataArray = new Uint8Array(analyser.frequencyBinCount);
         }
-        
+
+        canvasInitialized = false;
         drawWaveform();
       } catch (e) {
-        console.log('Audio visualization not available:', e);
-        // Handle specific getUserMedia errors
+        console.warn('Audio visualization not available:', e);
         if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
           showError(errorMessages['not-allowed']);
         } else if (e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError') {
@@ -638,43 +605,40 @@
       }
     }
 
+    function initCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = waveformCanvas.getBoundingClientRect();
+      waveformCanvas.width = rect.width * dpr;
+      waveformCanvas.height = rect.height * dpr;
+      const ctx = waveformCanvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      cachedGradient = ctx.createLinearGradient(0, 0, 0, rect.height);
+      cachedGradient.addColorStop(0, '#ff3b30');
+      cachedGradient.addColorStop(1, '#ff9500');
+      canvasInitialized = true;
+    }
+
     function drawWaveform() {
       if (!analyser || !isListening) return;
-      
-      const canvas = waveformCanvas;
-      const ctx = canvas.getContext('2d');
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-      
-      // Set canvas size for high DPI displays
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
-      
+      if (!canvasInitialized) initCanvas();
+
+      const ctx = waveformCanvas.getContext('2d');
+      const rect = waveformCanvas.getBoundingClientRect();
+
       animationId = requestAnimationFrame(drawWaveform);
-      
       analyser.getByteFrequencyData(dataArray);
-      
       ctx.clearRect(0, 0, rect.width, rect.height);
-      
-      const barWidth = (rect.width / bufferLength) * 2.5;
+
+      const barWidth = (rect.width / dataArray.length) * 2.5;
       let x = 0;
-      
-      // Create gradient
-      const gradient = ctx.createLinearGradient(0, 0, 0, rect.height);
-      gradient.addColorStop(0, '#ff3b30');
-      gradient.addColorStop(1, '#ff9500');
-      
-      for (let i = 0; i < bufferLength; i++) {
+      ctx.fillStyle = cachedGradient;
+
+      for (let i = 0; i < dataArray.length; i++) {
         const barHeight = (dataArray[i] / 255) * rect.height;
-        
-        ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.roundRect(x, (rect.height - barHeight) / 2, barWidth - 1, barHeight, 2);
         ctx.fill();
-        
         x += barWidth + 1;
       }
     }
@@ -684,17 +648,26 @@
         cancelAnimationFrame(animationId);
         animationId = null;
       }
-      
+
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+      }
+
       if (microphone) {
         microphone.disconnect();
         microphone = null;
       }
-      
+
       if (audioContext && audioContext.state !== 'closed') {
         audioContext.close();
         audioContext = null;
         analyser = null;
       }
+
+      canvasInitialized = false;
+      cachedGradient = null;
+      dataArray = null;
     }
 
     micBtn.addEventListener('click', () => {

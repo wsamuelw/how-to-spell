@@ -1,6 +1,4 @@
-```
-# Configuration and data files
-*.json
+# Environment and secrets
 *.env
 *.env.local
 *.env.*
@@ -70,4 +68,3 @@ htmlcov/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-```

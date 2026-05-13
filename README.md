@@ -23,10 +23,8 @@ Try it now: **[wsamuelw.github.io/how-to-spell](https://wsamuelw.github.io/how-t
 - **Skeleton Loading** - Smooth transitions between states
 - **Mobile Optimized** - Works perfectly on phones and tablets
 - **Zero Setup** - No accounts, no passwords, no configuration
-- **Offline Capable** - Works without internet after first load*
+- **No Install** - Just open the link, no app store needed
 - **Privacy First** - Minimal analytics, no personal data collection
-
-*\*Note: Voice recognition requires internet connection for most browsers
 
 ## 📱 Use Cases
 
@@ -91,17 +89,17 @@ That's it. No accounts. No settings. No distractions.
 ## 🔒 Privacy & Analytics
 
 This app uses **Google Analytics 4** to track anonymous usage statistics:
-- Page views with device/browser information
+- Page views with browser/device type
 - Voice recognition events (success/failure)
 - Session duration
 
 **What we DON'T track:**
 - Personal information
 - Voice recordings
-- Specific words searched
-- User identity or location
+- Specific words searched (only word length)
+- User identity, location, or raw user agent strings
 
-You can view the implementation in `index.html` (lines 5-13).
+You can view the implementation in `index.html` (lines 27-34).
 
 ## 🏃 Running Locally
 
