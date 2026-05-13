@@ -325,12 +325,21 @@
     let BLOCKED_WORDS_SET = new Set();
     const FUZZY_PATTERNS = [
       /f+u+c+k+/i,           // fuck variations
-      /s+h+i+t+/i,           // shit variations  
+      /f+c+k+/i,             // fck — missing vowels
+      /p+h+u+c+k+/i,         // phuck — ph substitution
+      /s+h+i+t+/i,           // shit variations
+      /s+h+t+/i,             // sht — missing vowels
       /b+i+t+c+h+/i,         // bitch variations
+      /b+t+c+h+/i,           // btch — missing vowels
       /a+s+s+h+o+l+e/i,      // asshole variations
       /n+i+g+(g|a)+/i,       // n-word variations
       /w+h+o+r+e+/i,         // whore variations
       /s+l+u+t+/i,           // slut variations
+      /d+i+c+k+/i,           // dick with repeats
+      /p+i+s+s+/i,           // piss with repeats
+      /b+a+s+t+a+r+d+/i,     // bastard with repeats
+      /r+e+t+a+r+d+/i,       // retard with repeats
+      /s+t+f+u+/i,           // stfu
     ];
 
     // Load blocked words from JSON file

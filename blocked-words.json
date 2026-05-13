@@ -3,18 +3,31 @@
     "fuck",
     "fuk",
     "shit",
-    "sh1t",
     "bitch",
-    "b!tch",
     "asshole",
-    "a$$hole",
-    "nigga",
+    "ass",
+    "dick",
+    "piss",
+    "bastard",
+    "motherfucker",
     "whore",
     "slut",
-    "f*ck",
-    "sh!t",
-    "damn",
-    "crap"
+    "nigga",
+    "wtf",
+    "stfu"
+  ],
+  "slurs": [
+    "nigger",
+    "nig",
+    "chink",
+    "spic",
+    "fag",
+    "faggot",
+    "dyke",
+    "kike",
+    "wetback",
+    "tranny",
+    "retard"
   ],
   "hate": [
     "racist",
@@ -34,23 +47,33 @@
     "anal",
     "cum",
     "orgasm",
-    "masturbate"
+    "masturbate",
+    "dildo",
+    "blowjob",
+    "pussy",
+    "boobs",
+    "tits"
   ],
   "bullying": [
     "loser",
-    "nerd",
-    "geek",
     "stupid",
     "idiot",
-    "fat",
     "ugly",
-    "crybaby"
+    "crybaby",
+    "dumb",
+    "moron",
+    "suck"
   ],
   "self_harm": [
     "suicide",
     "kill myself",
     "harm myself",
+    "cut myself",
+    "hang myself",
     "overdose",
-    "self-harm"
+    "self-harm",
+    "kys",
+    "want to die",
+    "end my life"
   ]
 }
