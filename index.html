@@ -424,6 +424,8 @@
     let microphone = null;
     let animationId = null;
     let currentErrorMessage = '';
+    let recognition = null;
+    let recognitionTimeout = null;
 
     // Error message mapping
     const errorMessages = {
@@ -445,52 +447,82 @@
     if (!SpeechRecognition) {
       micBtn.style.display = 'none';
       showError('Voice not supported. Try Chrome or Safari.');
-    }
+    } else {
+      // Initialize speech recognition with iOS Safari optimizations
+      recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 3;
+      recognition.continuous = false;
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 3;
+      recognition.onstart = () => {
+        console.log('Speech recognition started');
+        // Clear any existing timeout
+        if (recognitionTimeout) clearTimeout(recognitionTimeout);
+        
+        // Set a timeout to detect if recognition stalls (common on iOS)
+        recognitionTimeout = setTimeout(() => {
+          console.warn('Speech recognition timeout - stopping');
+          try {
+            recognition.stop();
+          } catch (e) {}
+        }, 10000); // 10 second timeout
+      };
 
-    recognition.onresult = (event) => {
-      const alternatives = [];
-      for (let i = 0; i < event.results[0].length; i++) {
-        alternatives.push(event.results[0][i].transcript.toLowerCase());
-      }
-      const word = extractWord(alternatives);
-      if (word) {
-        showWord(word);
-      } else {
-        showError("Didn't catch that. Try again.");
+      recognition.onresult = (event) => {
+        console.log('Speech recognition result received');
+        // Clear timeout on successful result
+        if (recognitionTimeout) clearTimeout(recognitionTimeout);
+        
+        const alternatives = [];
+        for (let i = 0; i < event.results[0].length; i++) {
+          alternatives.push(event.results[0][i].transcript.toLowerCase());
+        }
+        const word = extractWord(alternatives);
+        if (word) {
+          showWord(word);
+        } else {
+          showError("Didn't catch that. Try again.");
+          stopListening();
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        // Clear timeout on error
+        if (recognitionTimeout) clearTimeout(recognitionTimeout);
+        
+        let errorMessage = '';
+        
+        // Map error codes to user-friendly messages
+        if (event.error === 'no-speech') {
+          errorMessage = errorMessages['no-speech'];
+        } else if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+          errorMessage = errorMessages['not-allowed'];
+        } else if (event.error === 'no-microphone' || event.error === 'devices-not-found') {
+          errorMessage = errorMessages['no-microphone'];
+        } else if (event.error === 'network' || event.error === 'service-not-allowed') {
+          errorMessage = errorMessages['network'];
+        } else if (event.error === 'audio-capture') {
+          errorMessage = errorMessages['audio-capture'];
+        } else if (event.error === 'aborted') {
+          // User cancelled or timeout - don't show error, just stop
+          return;
+        } else {
+          errorMessage = errorMessages['default'];
+        }
+        
+        showError(errorMessage);
         stopListening();
-      }
-    };
+      };
 
-    recognition.onerror = (event) => {
-      let errorMessage = '';
-      
-      // Map error codes to user-friendly messages
-      if (event.error === 'no-speech') {
-        errorMessage = errorMessages['no-speech'];
-      } else if (event.error === 'not-allowed' || event.error === 'permission-denied') {
-        errorMessage = errorMessages['not-allowed'];
-      } else if (event.error === 'no-microphone' || event.error === 'devices-not-found') {
-        errorMessage = errorMessages['no-microphone'];
-      } else if (event.error === 'network' || event.error === 'service-not-allowed') {
-        errorMessage = errorMessages['network'];
-      } else if (event.error === 'audio-capture') {
-        errorMessage = errorMessages['audio-capture'];
-      } else {
-        errorMessage = errorMessages['default'];
-      }
-      
-      showError(errorMessage);
-      stopListening();
-    };
-
-    recognition.onend = () => {
-      stopListening();
-    };
+      recognition.onend = () => {
+        console.log('Speech recognition ended');
+        // Clear timeout
+        if (recognitionTimeout) clearTimeout(recognitionTimeout);
+        stopListening();
+      };
+    }
 
     // === Word Extraction ===
     function extractWord(alternatives) {
@@ -577,14 +609,61 @@
     // === UI ===
     async function startListening() {
       if (isAnimating) return;
+      
+      // Track mic button click
+      trackEvent('mic_button_click', {
+        browser: browserInfo.browser,
+        device_type: deviceType
+      });
+      
       try {
+        // Check for HTTPS requirement
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+          showError('Microphone requires HTTPS. Please use a secure connection.');
+          return;
+        }
+        
+        // Check if SpeechRecognition is available
+        if (!SpeechRecognition) {
+          showError('Voice not supported. Try Chrome or Safari.');
+          return;
+        }
+        
+        // Resume AudioContext if it exists (iOS Safari requirement)
+        if (audioContext && audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
+        
         recognition.start();
         isListening = true;
         micBtn.classList.add('listening');
         listeningText.classList.add('show');
         waveformContainer.classList.add('show');
+        
+        // Initialize audio visualization with shared stream approach
         await initAudioVisualization();
-      } catch (e) {}
+        
+      } catch (e) {
+        console.error('Error starting listening:', e);
+        isListening = false;
+        micBtn.classList.remove('listening');
+        listeningText.classList.remove('show');
+        waveformContainer.classList.remove('show');
+        
+        // Provide specific error feedback
+        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+          showError(errorMessages['not-allowed']);
+        } else if (e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError') {
+          showError(errorMessages['no-microphone']);
+        } else if (e.name === 'NotReadableError' || e.name === 'TrackStartError') {
+          showError(errorMessages['audio-capture']);
+        } else if (e.name === 'InvalidStateError') {
+          // Speech recognition already started or in invalid state
+          showError('Please wait a moment and try again.');
+        } else {
+          showError('Unable to access microphone. Please check permissions and try again.');
+        }
+      }
     }
 
     function stopListening() {
@@ -612,12 +691,27 @@
     // === Audio Visualization (Waveform) ===
     async function initAudioVisualization() {
       try {
+        // iOS Safari: AudioContext must be created/resumed after user interaction
         if (!audioContext) {
           audioContext = new (window.AudioContext || window.webkitAudioContext)();
           analyser = audioContext.createAnalyser();
           analyser.fftSize = 256;
-          
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
+        
+        // Ensure AudioContext is running (iOS Safari requirement)
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
+        
+        // Reuse existing microphone connection if available to avoid multiple permission prompts
+        if (!microphone) {
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            } 
+          });
           microphone = audioContext.createMediaStreamSource(stream);
           microphone.connect(analyser);
         }
@@ -699,12 +793,6 @@
 
     micBtn.addEventListener('click', () => {
       if (isAnimating) return;
-      
-      // Track mic button click
-      trackEvent('mic_button_click', {
-        browser: browserInfo.browser,
-        device_type: deviceType
-      });
       
       if (isListening) {
         stopListening();
