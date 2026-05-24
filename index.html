@@ -480,6 +480,7 @@
     let canvasInitialized = false;
     let cachedGradient = null;
     let dataArray = null;
+    let audioInitialized = false;
 
     // Error message mapping (kid-friendly)
     const errorMessages = {
@@ -633,7 +634,9 @@
         micBtn.classList.add('listening');
         listeningText.classList.add('show');
         waveformContainer.classList.add('show');
-        await initAudioVisualization();
+        if (await initAudioOnce()) {
+          startVisualization();
+        }
       } catch (e) {
         console.warn('Failed to start recognition:', e);
         stopListening();
@@ -663,24 +666,23 @@
     }
 
     // === Audio Visualization (Waveform) ===
-    async function initAudioVisualization() {
+    // Init audio ONCE on first mic click — iOS Safari re-prompts or fails on subsequent getUserMedia calls
+    async function initAudioOnce() {
+      if (audioInitialized) return true;
       try {
-        if (!audioContext) {
-          audioContext = new (window.AudioContext || window.webkitAudioContext)();
-          if (audioContext.state === 'suspended') {
-            await audioContext.resume();
-          }
-          analyser = audioContext.createAnalyser();
-          analyser.fftSize = 256;
-
-          mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          microphone = audioContext.createMediaStreamSource(mediaStream);
-          microphone.connect(analyser);
-          dataArray = new Uint8Array(analyser.frequencyBinCount);
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
         }
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
 
-        canvasInitialized = false;
-        drawWaveform();
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        microphone = audioContext.createMediaStreamSource(mediaStream);
+        microphone.connect(analyser);
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        audioInitialized = true;
+        return true;
       } catch (e) {
         console.warn('Audio visualization not available:', e);
         if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
@@ -692,7 +694,14 @@
         } else {
           showError(errorMessages['default']);
         }
+        return false;
       }
+    }
+
+    function startVisualization() {
+      if (!audioInitialized) return;
+      canvasInitialized = false;
+      drawWaveform();
     }
 
     let cachedRect = null;
@@ -745,27 +754,9 @@
         cancelAnimationFrame(animationId);
         animationId = null;
       }
-
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
-        mediaStream = null;
-      }
-
-      if (microphone) {
-        microphone.disconnect();
-        microphone = null;
-      }
-
-      if (audioContext && audioContext.state !== 'closed') {
-        audioContext.close();
-        audioContext = null;
-        analyser = null;
-      }
-
       canvasInitialized = false;
       cachedGradient = null;
       cachedRect = null;
-      dataArray = null;
     }
 
     micBtn.addEventListener('click', () => {
