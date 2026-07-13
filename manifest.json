@@ -3,7 +3,7 @@
   "short_name": "Spell",
   "description": "Kids tap the mic, say a word, and see how to spell it.",
   "start_url": "./index.html",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#fafafa",
   "theme_color": "#fafafa",
   "icons": [
