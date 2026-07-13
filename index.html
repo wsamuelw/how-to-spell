@@ -495,16 +495,17 @@
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition = null;
 
-    if (!SpeechRecognition) {
-      micBtn.style.display = 'none';
-      showError('Voice not supported. Try Chrome or Safari.');
-    } else {
-      recognition = new SpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 3;
+    // Create (or recreate) a fresh SpeechRecognition instance.
+    // Called on init and when returning from background — mobile browsers
+    // kill the recognition session but leave the JS object in a dead state.
+    function createRecognition() {
+      if (!SpeechRecognition) return null;
+      const r = new SpeechRecognition();
+      r.lang = 'en-US';
+      r.interimResults = false;
+      r.maxAlternatives = 3;
 
-      recognition.onresult = (event) => {
+      r.onresult = (event) => {
         const alternatives = [];
         for (let i = 0; i < event.results[0].length; i++) {
           alternatives.push(event.results[0][i].transcript.toLowerCase());
@@ -518,7 +519,7 @@
         }
       };
 
-      recognition.onerror = (event) => {
+      r.onerror = (event) => {
         let errorMessage = '';
 
         // Map error codes to user-friendly messages
@@ -540,9 +541,18 @@
         stopListening();
       };
 
-      recognition.onend = () => {
+      r.onend = () => {
         stopListening();
       };
+
+      return r;
+    }
+
+    if (!SpeechRecognition) {
+      micBtn.style.display = 'none';
+      showError('Voice not supported. Try Chrome or Safari.');
+    } else {
+      recognition = createRecognition();
     }
 
     // Load blocked words (non-blocking — button works immediately)
@@ -801,12 +811,14 @@
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
 
-    // Reset audio when returning from background — mobile browsers
-    // suspend AudioContext and kill MediaStream tracks on backgrounding.
+    // Reset audio + recognition when returning from background — mobile
+    // browsers suspend AudioContext, kill MediaStream tracks, and leave
+    // SpeechRecognition in a dead state on backgrounding.
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         stopListening();
         resetAudioState();
+        recognition = createRecognition();
       }
     });
   </script>
