@@ -759,6 +759,27 @@
       cachedRect = null;
     }
 
+    // Reset stale audio state so next mic tap re-initialises cleanly.
+    // Called when the app resumes from background — mobile browsers
+    // suspend AudioContext and kill MediaStream tracks on backgrounding.
+    function resetAudioState() {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(t => t.stop());
+        mediaStream = null;
+      }
+      if (audioContext) {
+        audioContext.close().catch(() => {});
+        audioContext = null;
+      }
+      analyser = null;
+      microphone = null;
+      dataArray = null;
+      audioInitialized = false;
+      canvasInitialized = false;
+      cachedGradient = null;
+      cachedRect = null;
+    }
+
     micBtn.addEventListener('click', () => {
       if (isAnimating) return;
       
@@ -779,6 +800,15 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
+
+    // Reset audio when returning from background — mobile browsers
+    // suspend AudioContext and kill MediaStream tracks on backgrounding.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        stopListening();
+        resetAudioState();
+      }
+    });
   </script>
 
 </body>
