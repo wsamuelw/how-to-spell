@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spell-v1';
+const CACHE_NAME = 'spell-v2';
 const SHELL = ['./index.html', './blocked-words.json'];
 
 self.addEventListener('install', (e) => {

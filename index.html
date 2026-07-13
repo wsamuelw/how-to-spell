@@ -811,25 +811,24 @@
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
 
-    // Reset audio + recognition when returning from background.
-    // Mobile browsers suspend AudioContext, kill MediaStream tracks, and
-    // leave SpeechRecognition in a dead state on backgrounding.
-    // iOS PWAs in standalone mode don't reliably fire visibilitychange,
-    // so we also listen for pageshow (back-forward cache restore) and
-    // window focus as fallbacks.
-    function onResume() {
-      stopListening();
-      resetAudioState();
-      recognition = createRecognition();
-    }
+    // iOS PWAs can be fully killed and restored from service worker cache
+    // without firing visibilitychange. The restored page has dead audio and
+    // recognition state with no reliable way to recover.
+    // Fix: detect backgrounding via pagehide, then reload on resume. For a
+    // zero-dependency static page served from SW cache, reload is instant.
+    let wasHidden = false;
 
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') onResume();
+      if (document.visibilityState === 'hidden') wasHidden = true;
+      if (document.visibilityState === 'visible' && wasHidden) location.reload();
     });
+    window.addEventListener('pagehide', () => { wasHidden = true; });
     window.addEventListener('pageshow', (e) => {
-      if (e.persisted) onResume();
+      if (e.persisted || wasHidden) location.reload();
     });
-    window.addEventListener('focus', onResume);
+    window.addEventListener('focus', () => {
+      if (wasHidden) location.reload();
+    });
   </script>
 
 </body>
