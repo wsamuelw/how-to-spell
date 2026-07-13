@@ -811,16 +811,25 @@
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
 
-    // Reset audio + recognition when returning from background — mobile
-    // browsers suspend AudioContext, kill MediaStream tracks, and leave
-    // SpeechRecognition in a dead state on backgrounding.
+    // Reset audio + recognition when returning from background.
+    // Mobile browsers suspend AudioContext, kill MediaStream tracks, and
+    // leave SpeechRecognition in a dead state on backgrounding.
+    // iOS PWAs in standalone mode don't reliably fire visibilitychange,
+    // so we also listen for pageshow (back-forward cache restore) and
+    // window focus as fallbacks.
+    function onResume() {
+      stopListening();
+      resetAudioState();
+      recognition = createRecognition();
+    }
+
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        stopListening();
-        resetAudioState();
-        recognition = createRecognition();
-      }
+      if (document.visibilityState === 'visible') onResume();
     });
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) onResume();
+    });
+    window.addEventListener('focus', onResume);
   </script>
 
 </body>
