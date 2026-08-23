@@ -1,5 +1,5 @@
-// v5: uniform-rejection anti-troll design, confidence gate, spaced display.
-const CACHE_NAME = 'spell-v5';
+// v6: proper-case word display (matches how kids write).
+const CACHE_NAME = 'spell-v6';
 const SHELL = ['./index.html'];
 
 self.addEventListener('install', (e) => {

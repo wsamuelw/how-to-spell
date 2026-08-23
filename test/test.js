@@ -88,11 +88,11 @@ check(sandbox.isLowConfidence(0.7) === false, '0.7 confidence should pass');
 check(sandbox.isLowConfidence(0.95) === false, '0.95 confidence should pass');
 check(sandbox.isLowConfidence(0) === false, '0 confidence (unknown) should pass');
 
-// --- Letter-spaced display ---
-check(sandbox.formatWord('dinosaur') === 'D I N O S A U R',
-  'formatWord should space letters');
-check(sandbox.formatWord('ice cream') === 'I C E   C R E A M',
-  'formatWord should handle multi-word phrases');
+// --- Proper-case display ---
+check(sandbox.formatWord('dinosaur') === 'Dinosaur',
+  'formatWord should capitalise the first letter only');
+check(sandbox.formatWord('ice cream') === 'Ice cream',
+  'formatWord should keep the rest lowercase');
 
 // --- Content filter: must block ---
 [
