@@ -1,7 +1,5 @@
-// v4: revert per-listen mic release (iOS second-listen silence).
-// The app no longer fetches blocked-words.json (lists are inlined), so
-// only the page itself needs caching.
-const CACHE_NAME = 'spell-v4';
+// v5: uniform-rejection anti-troll design, confidence gate, spaced display.
+const CACHE_NAME = 'spell-v5';
 const SHELL = ['./index.html'];
 
 self.addEventListener('install', (e) => {

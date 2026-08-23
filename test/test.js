@@ -70,6 +70,29 @@ check(scripts.length === 3, `expected 3 inline scripts, found ${scripts.length}`
 const { isWordBlocked, extractWord } = sandbox;
 check(typeof isWordBlocked === 'function', 'isWordBlocked not defined');
 check(typeof extractWord === 'function', 'extractWord not defined');
+check(typeof sandbox.isLowConfidence === 'function', 'isLowConfidence not defined');
+check(typeof sandbox.formatWord === 'function', 'formatWord not defined');
+
+// --- Uniform rejection: all soft-fail paths must use the SAME message ---
+// const declarations don't land on the sandbox global; read via the context.
+const RETRY_MESSAGE = vm.runInContext('RETRY_MESSAGE', sandbox);
+check(typeof RETRY_MESSAGE === 'string' && RETRY_MESSAGE.length > 0,
+  'RETRY_MESSAGE must be a non-empty string');
+
+// --- Confidence gate ---
+// Real low confidence → reject; high confidence → accept;
+// 0 = "unknown" (iOS quirk) → accept.
+check(sandbox.isLowConfidence(0.5) === true, '0.5 confidence should be rejected');
+check(sandbox.isLowConfidence(0.69) === true, '0.69 confidence should be rejected');
+check(sandbox.isLowConfidence(0.7) === false, '0.7 confidence should pass');
+check(sandbox.isLowConfidence(0.95) === false, '0.95 confidence should pass');
+check(sandbox.isLowConfidence(0) === false, '0 confidence (unknown) should pass');
+
+// --- Letter-spaced display ---
+check(sandbox.formatWord('dinosaur') === 'D I N O S A U R',
+  'formatWord should space letters');
+check(sandbox.formatWord('ice cream') === 'I C E   C R E A M',
+  'formatWord should handle multi-word phrases');
 
 // --- Content filter: must block ---
 [

@@ -194,10 +194,10 @@
     }
 
     .display-word {
-      font-size: clamp(3.5rem, 18vw, 6rem);
+      font-size: clamp(2.75rem, 13vw, 5rem);
       font-weight: 700;
       color: #1d1d1f;
-      letter-spacing: -0.03em;
+      letter-spacing: 0.05em;
       animation: fadeUp 0.35s ease;
       text-align: center;
       padding: 0 1.5rem;
@@ -522,10 +522,18 @@
         'not-allowed': "Oops! I need your grown-up to let me use the microphone.",
         'no-microphone': "I can't hear you! Is your microphone working?",
         'network': "Hmm, I can't reach the internet. Ask a grown-up for help?",
-        'no-speech': "I didn't hear anything. Try talking a bit louder!",
         'audio-capture': "Something's wrong with the microphone. Let's try again!",
         'default': "Something went wrong. Let's try again!"
     };
+
+    // Every rejection — blocked word, misheard, silence, low confidence —
+    // gets this EXACT message. A distinct "blocked" reply would confirm to a
+    // probing kid that they found live ammunition; uniform rejection gives
+    // no signal at all.
+    const RETRY_MESSAGE = "Didn't catch that. Try again.";
+    // Below this, speech is likely mumbled or exaggerated — ask again
+    // rather than guess. Clear homework speech never comes near it.
+    const CONFIDENCE_THRESHOLD = 0.7;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition = null;
@@ -541,17 +549,35 @@
       r.maxAlternatives = 3;
 
       r.onresult = (event) => {
+        const result = event.results[0];
         const alternatives = [];
-        for (let i = 0; i < event.results[0].length; i++) {
-          alternatives.push(event.results[0][i].transcript.toLowerCase());
+        for (let i = 0; i < result.length; i++) {
+          alternatives.push(result[i].transcript.toLowerCase());
         }
-        const word = extractWord(alternatives);
-        if (word) {
-          showWord(word);
-        } else {
-          showError("Didn't catch that. Try again.");
+
+        // Mumbled or exaggerated speech → ask again, don't guess.
+        // iOS Safari sometimes reports confidence as 0 for every result;
+        // treat 0 as "unknown" and let the word through.
+        if (isLowConfidence(result.confidence)) {
+          showError(RETRY_MESSAGE);
           stopListening();
+          return;
         }
+
+        // Extract a candidate from EVERY alternative and reject if any of
+        // them is blocked — the recogniser sometimes politely picks the
+        // innocent reading of ambiguous audio.
+        const candidates = [];
+        for (const alt of alternatives) {
+          const word = extractWord([alt]);
+          if (word) candidates.push(word);
+        }
+        if (candidates.length === 0 || candidates.some(isWordBlocked)) {
+          showError(RETRY_MESSAGE);
+          stopListening();
+          return;
+        }
+        showWord(candidates[0]);
       };
 
       r.onerror = (event) => {
@@ -559,7 +585,7 @@
 
         // Map error codes to user-friendly messages
         if (event.error === 'no-speech') {
-          errorMessage = errorMessages['no-speech'];
+          errorMessage = RETRY_MESSAGE;  // same as every other rejection
         } else if (event.error === 'not-allowed' || event.error === 'permission-denied') {
           errorMessage = errorMessages['not-allowed'];
         } else if (event.error === 'no-microphone' || event.error === 'devices-not-found') {
@@ -625,13 +651,26 @@
       return null;
     }
 
+    // Display words letter-spaced in capitals: D I N O S A U R.
+    // Reads letter-by-letter for screen readers, and if anything ever
+    // slipped past the filter it would look like a worksheet, not a jackpot.
+    function formatWord(word) {
+      return word.toUpperCase().split('').join(' ');
+    }
+
+    // True only when the recogniser reports a real but low confidence.
+    // 0 means "unknown" (iOS Safari quirk) and must NOT be rejected.
+    function isLowConfidence(confidence) {
+      return confidence > 0 && confidence < CONFIDENCE_THRESHOLD;
+    }
+
     // === Show Word ===
     async function showWord(word) {
       isAnimating = true;
       stopListening();
 
       if (isWordBlocked(word)) {
-        showError("That's a tricky one! Try saying a different word.");
+        showError(RETRY_MESSAGE);
         isAnimating = false;
         return;
       }
@@ -644,7 +683,7 @@
       });
 
       wordStage.classList.add('active');
-      displayWord.textContent = word.charAt(0).toUpperCase() + word.slice(1);
+      displayWord.textContent = formatWord(word);
       tapHint.style.display = 'block';
       wordStage.focus();
 

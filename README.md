@@ -22,6 +22,7 @@ Try it now: **[wsamuelw.github.io/how-to-spell](https://wsamuelw.github.io/how-t
 - **Real-time Waveform** - Visual feedback when listening to your voice
 - **Content Filter** - Blocks profanity, hate speech, slurs, and inappropriate words with fuzzy matching for obfuscated spellings
 - **Kid-Friendly Errors** - Error messages written for children, not developers
+- **No-Troll Design** - Every rejection looks identical (no "blocked!" scoreboard), words display letter-spaced (`D I N O S A U R`), mumbled speech is asked again rather than guessed, and all recognition candidates are screened before anything shows
 - **Mobile Optimized** - Works perfectly on phones and tablets
 - **Zero Setup** - No accounts, no passwords, no configuration
 - **No Install** - Just open the link, no app store needed
