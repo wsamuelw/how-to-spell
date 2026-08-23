@@ -688,17 +688,13 @@
     function stopListening() {
       if (!isListening && !micBtn.classList.contains('listening')) return;
       try { if (recognition) recognition.stop(); } catch (e) {}
-      // Release the microphone between listens. The stream is re-acquired
-      // by initAudioOnce() on the next session; holding it keeps the OS mic
-      // indicator lit and drains battery on kids' tablets.
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(t => t.stop());
-        mediaStream = null;
-        analyser = null;
-        microphone = null;
-        dataArray = null;
-        audioInitialized = false;
-      }
+      // Do NOT release the MediaStream here, even though holding it keeps
+      // the OS mic indicator lit between listens. iOS Safari can't reliably
+      // hand the mic back to SpeechRecognition once getUserMedia has been
+      // cycled — the second listen starts but hears nothing (regression in
+      // fd226a4, confirmed on iPhone). The stream lives for the page
+      // session; resetAudioState() tears it down on background/return,
+      // which is the safe place to release it.
       isListening = false;
       micBtn.classList.remove('listening');
       listeningText.classList.remove('show');
@@ -757,6 +753,11 @@
 
     function startVisualization() {
       if (!audioInitialized) return;
+      // iOS can suspend the AudioContext after interruptions (Siri, alarms)
+      // without firing visibilitychange — revive it if needed.
+      if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume().catch(() => {});
+      }
       canvasInitialized = false;
       drawWaveform();
     }

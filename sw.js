@@ -1,6 +1,5 @@
-// v3: index.html changed materially (inlined filter, CSP, mic lifecycle).
-// Bump forces a clean install for returning visitors.
-const CACHE_NAME = 'spell-v3';
+// v4: revert per-listen mic release (iOS second-listen silence).
+const CACHE_NAME = 'spell-v4';
 const SHELL = ['./index.html', './blocked-words.json'];
 
 self.addEventListener('install', (e) => {
