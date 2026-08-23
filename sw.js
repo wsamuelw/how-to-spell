@@ -1,6 +1,8 @@
 // v4: revert per-listen mic release (iOS second-listen silence).
+// The app no longer fetches blocked-words.json (lists are inlined), so
+// only the page itself needs caching.
 const CACHE_NAME = 'spell-v4';
-const SHELL = ['./index.html', './blocked-words.json'];
+const SHELL = ['./index.html'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(

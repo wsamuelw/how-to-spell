@@ -151,6 +151,14 @@ python3 -m http.server 8000
 
 That's it. No build step. No `npm install`. Just open the file.
 
+## 🧪 Tests
+
+```bash
+node test/test.js
+```
+
+Runs the app's inline scripts headlessly and asserts content-filter behaviour, word extraction, and that the blocklists inlined in `index.html` stay identical to `blocked-words.json`. Runs automatically on every push via GitHub Actions. No dependencies.
+
 ## 📦 Deployment Options
 
 ### GitHub Pages (Recommended)
