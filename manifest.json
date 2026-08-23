@@ -1,7 +1,7 @@
 {
   "name": "How to Spell",
   "short_name": "Spell",
-  "description": "Kids tap the mic, say a word, and see how to spell it.",
+  "description": "Kids tap the mic, say a word, and see how to spell it. No accounts, no recordings, no word tracking.",
   "start_url": "./index.html",
   "display": "browser",
   "background_color": "#fafafa",

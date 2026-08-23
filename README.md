@@ -89,22 +89,23 @@ That's it. No accounts. No settings. No distractions.
 
 ## 🛡️ Content Filter
 
-The app includes a content filter (`blocked-words.json`) to prevent displaying inappropriate words to children. It covers six categories:
+The app includes a content filter to prevent displaying inappropriate words to children. The word lists are inlined in `index.html` (so filtering works instantly, with no network dependency); `blocked-words.json` mirrors them as a human-editable reference. It covers six categories:
 
 | Category | Examples | Count |
 |----------|----------|-------|
-| Profanity | fuck, shit, bitch, asshole | 15 |
-| Slurs | nigger, fag, chink, spic | 11 |
+| Profanity | fuck, shit, bitch, asshole, cunt, wanker | 23 |
+| Slurs | nigger, fag, chink, spic | 18 |
 | Hate speech | racist, bigot, sexist | 7 |
-| Sexual content | porn, nude, dildo | 14 |
-| Bullying | loser, stupid, moron | 8 |
-| Self-harm | suicide, kys, "want to die" | 10 |
+| Sexual content | porn, nude, dildo | 19 |
+| Bullying | loser, stupid, moron | 14 |
+| Self-harm | suicide, kys, "want to die" | 14 |
 
 **How it works:**
 - Direct word matching via a normalised `Set` lookup (O(1))
 - Symbol-to-letter mapping before normalisation (`@` → `a`, `!` → `i`, `$` → `s`)
 - Fuzzy regex patterns for obfuscated spellings (missing vowels, repeated letters)
 - Leetspeak substitution detection (0 → o, 1 → i, 3 → e, etc.)
+- An allow-list for real words that would otherwise trip fuzzy patterns (e.g. Dickens, Dickinson)
 
 ### Limitations
 
@@ -114,7 +115,7 @@ The content filter is a **best-effort client-side check**, not a security bounda
 - **Novel obfuscation** — the fuzzy patterns cover common tricks (missing vowels, leetspeak, symbol substitution), but a motivated user can always find new ways to bypass client-side filtering.
 - **Substring matching** — the filter checks whole words, not substrings. "ass" is blocked but "class" and "grass" pass through. This is intentional to avoid false positives on legitimate words.
 - **Over-blocking trade-off** — some common words are blocked (e.g., "sex" in "sexual health", "anal" in "analogy"). The filter prioritises safety over completeness for a children's app.
-- **No server-side validation** — the filter runs entirely in the browser. The blocked word list is fetched from a JSON file that could be modified if someone forks the repo.
+- **No server-side validation** — the filter runs entirely in the browser. If you fork this repo, you can edit the word lists out of it.
 - **Language limited** — currently English only. The Web Speech API's `lang` is set to `en-US`.
 
 Contributions to improve the filter are welcome — see `blocked-words.json` for the word lists.
@@ -124,7 +125,6 @@ Contributions to improve the filter are welcome — see `blocked-words.json` for
 This app uses **Google Analytics 4** to track anonymous usage statistics:
 - Page views with browser/device type
 - Voice recognition events (success/failure)
-- Session duration
 
 **What we DON'T track:**
 - Personal information

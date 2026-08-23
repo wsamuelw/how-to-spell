@@ -4,15 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>How to Spell</title>
-  <meta name="description" content="Kids tap the mic, say a word, and see how to spell it. Zero setup, zero ads, zero data collection.">
+  <meta name="description" content="Kids tap the mic, say a word, and see how to spell it. No accounts, no recordings, no word tracking.">
   <meta name="theme-color" content="#fafafa">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="icon-192.png?v=3">
+  <!-- Security: corrected policy. The earlier attempt (removed in 9d4a077)
+       used default-src 'none', which blocked this page's own inline script
+       and killed the mic button. This version allows inline scripts, gtag.js,
+       GA endpoints and blob: media while restricting everything else. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com; img-src 'self' data:; font-src 'self'; media-src 'self' blob:; worker-src 'self'; manifest-src 'self';">
+
   <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
   <link rel="manifest" href="manifest.json">
   <!-- Open Graph -->
   <meta property="og:title" content="How to Spell">
-  <meta property="og:description" content="Kids tap the mic, say a word, and see how to spell it. Zero setup, zero ads.">
+  <meta property="og:description" content="Kids tap the mic, say a word, and see how to spell it. No accounts, no recordings.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://wsamuelw.github.io/how-to-spell/">
   <meta property="og:image" content="https://wsamuelw.github.io/how-to-spell/icon-512.png">
@@ -113,6 +119,18 @@
       }
       50% {
         box-shadow: 0 0 0 14px rgba(29, 29, 31, 0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mic-btn,
+      .mic-btn.listening {
+        animation: none;
+      }
+      .display-word,
+      .tap-hint {
+        animation: none;
+        opacity: 1;
       }
     }
 
@@ -327,16 +345,6 @@
       }
     }
 
-    // Track session duration
-    let sessionStartTime = Date.now();
-    window.addEventListener('beforeunload', () => {
-      const sessionDuration = Math.round((Date.now() - sessionStartTime) / 1000);
-      trackEvent('session_duration', {
-        duration_seconds: sessionDuration,
-        browser: browserInfo.browser,
-        device_type: deviceType
-      });
-    });
 
     // Track browser and device info on page load
     function getDeviceType() {
@@ -383,9 +391,49 @@
     });
 
     // === Content Filter ===
-    // Load blocked words from external JSON file for easy management
-    let BLOCKED_CATEGORIES = {};
-    let BLOCKED_WORDS_SET = new Set();
+    // Blocked words are INLINED below (blocked-words.json stays in the repo
+    // as the human-editable source of truth). Inlining closes the startup
+    // window where a word recognised before the old fetch() resolved could
+    // bypass the category lists, and drops one network dependency.
+    const BLOCKED_CATEGORIES = {
+      "profanity": [
+        "fuck", "fuk", "shit", "bitch", "asshole", "ass", "dick", "piss",
+        "bastard", "motherfucker", "whore", "slut", "nigga", "wtf", "stfu",
+        "arse", "arsehole", "bollocks", "bugger", "cocksucker", "cunt",
+        "twat", "wanker"
+      ],
+      "slurs": [
+        "nigger", "nig", "chink", "spic", "fag", "faggot", "dyke", "kike",
+        "wetback", "tranny", "retard", "coon", "gook", "jap", "paki",
+        "pikey", "raghead", "towelhead"
+      ],
+      "hate": [
+        "racist", "bigot", "sexist", "homophobe", "misogynist",
+        "antisemite", "xenophobe"
+      ],
+      "sexual": [
+        "porn", "sex", "nude", "xxx", "erotic", "anal", "cum", "orgasm",
+        "masturbate", "dildo", "blowjob", "pussy", "boobs", "tits",
+        "fetish", "handjob", "horny", "rimjob", "sexy"
+      ],
+      "bullying": [
+        "loser", "stupid", "idiot", "ugly", "crybaby", "dumb", "moron",
+        "suck", "fatty", "fatso", "four eyes", "pathetic", "shut up",
+        "worthless"
+      ],
+      "self_harm": [
+        "suicide", "kill myself", "harm myself", "cut myself",
+        "hang myself", "overdose", "self-harm", "kys", "want to die",
+        "end my life", "end it all", "cutting myself",
+        "don't want to live", "want to kill myself"
+      ]
+    };
+    // Build optimised lookup set from all categories (normalised)
+    let BLOCKED_WORDS_SET = new Set(
+      Object.values(BLOCKED_CATEGORIES).flat().map(w => w.toLowerCase().replace(/[^a-z]/g, ''))
+    );
+    // Real words whose letters trip a fuzzy pattern — always allowed.
+    const ALLOWED_WORDS = new Set(['dickens', 'dickinson', 'dickory']);
     const FUZZY_PATTERNS = [
       /f+u+c+k+/i,           // fuck variations
       /f+c+k+/i,             // fck — missing vowels
@@ -403,25 +451,11 @@
       /b+a+s+t+a+r+d+/i,     // bastard with repeats
       /r+e+t+a+r+d+/i,       // retard with repeats
       /s+t+f+u+/i,           // stfu
+      /k+u+n+t+/i,           // cunt variants
+      /t+w+a+t+/i,           // twat variants
+      /w+a+n+k+e+r+/i,       // wanker variants
+      /b+o+l+l+o+c+k+s+/i,   // bollocks variants
     ];
-
-    // Load blocked words from JSON file
-    async function loadBlockedWords() {
-      try {
-        const response = await fetch('blocked-words.json');
-        if (!response.ok) throw new Error('Failed to load blocked words');
-        BLOCKED_CATEGORIES = await response.json();
-        
-        // Build optimized lookup set from all categories (normalised)
-        BLOCKED_WORDS_SET = new Set(
-          Object.values(BLOCKED_CATEGORIES).flat().map(w => w.toLowerCase().replace(/[^a-z]/g, ''))
-        );
-      } catch (error) {
-        console.error('Error loading blocked words:', error);
-        // Fallback to empty set if loading fails
-        BLOCKED_WORDS_SET = new Set();
-      }
-    }
 
     function isWordBlocked(word) {
       if (!word || word.length < 2) return false;
@@ -446,6 +480,9 @@
       // Normalize: remove non-alphabetic chars
       const normalized = symbolMapped.replace(/[^a-z]/g, '');
 
+      // Allow-list wins over everything
+      if (ALLOWED_WORDS.has(normalized)) return false;
+
       // Direct match check (O(1) lookup)
       if (BLOCKED_WORDS_SET.has(normalized)) return true;
 
@@ -468,6 +505,7 @@
     const waveformCanvas = document.getElementById('waveformCanvas');
 
     let isListening = false;
+    let errorTimer = null;
     let isAnimating = false;
     let audioContext = null;
     let analyser = null;
@@ -551,9 +589,6 @@
     } else {
       recognition = createRecognition();
     }
-
-    // Load blocked words (non-blocking — button works immediately)
-    loadBlockedWords();
 
     // === Word Extraction ===
     function extractWord(alternatives) {
@@ -653,6 +688,17 @@
     function stopListening() {
       if (!isListening && !micBtn.classList.contains('listening')) return;
       try { if (recognition) recognition.stop(); } catch (e) {}
+      // Release the microphone between listens. The stream is re-acquired
+      // by initAudioOnce() on the next session; holding it keeps the OS mic
+      // indicator lit and drains battery on kids' tablets.
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(t => t.stop());
+        mediaStream = null;
+        analyser = null;
+        microphone = null;
+        dataArray = null;
+        audioInitialized = false;
+      }
       isListening = false;
       micBtn.classList.remove('listening');
       listeningText.classList.remove('show');
@@ -669,7 +715,11 @@
     function showError(msg) {
       errorMsg.textContent = msg;
       errorMsg.classList.add('show');
-      setTimeout(() => errorMsg.classList.remove('show'), 3000);
+      if (errorTimer) clearTimeout(errorTimer);
+      errorTimer = setTimeout(() => {
+        errorMsg.classList.remove('show');
+        errorTimer = null;
+      }, 3000);
     }
 
     // === Audio Visualization (Waveform) ===

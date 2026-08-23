@@ -14,7 +14,15 @@
     "slut",
     "nigga",
     "wtf",
-    "stfu"
+    "stfu",
+    "arse",
+    "arsehole",
+    "bollocks",
+    "bugger",
+    "cocksucker",
+    "cunt",
+    "twat",
+    "wanker"
   ],
   "slurs": [
     "nigger",
@@ -27,7 +35,14 @@
     "kike",
     "wetback",
     "tranny",
-    "retard"
+    "retard",
+    "coon",
+    "gook",
+    "jap",
+    "paki",
+    "pikey",
+    "raghead",
+    "towelhead"
   ],
   "hate": [
     "racist",
@@ -52,7 +67,12 @@
     "blowjob",
     "pussy",
     "boobs",
-    "tits"
+    "tits",
+    "fetish",
+    "handjob",
+    "horny",
+    "rimjob",
+    "sexy"
   ],
   "bullying": [
     "loser",
@@ -62,7 +82,13 @@
     "crybaby",
     "dumb",
     "moron",
-    "suck"
+    "suck",
+    "fatty",
+    "fatso",
+    "four eyes",
+    "pathetic",
+    "shut up",
+    "worthless"
   ],
   "self_harm": [
     "suicide",
@@ -74,6 +100,10 @@
     "self-harm",
     "kys",
     "want to die",
-    "end my life"
+    "end my life",
+    "end it all",
+    "cutting myself",
+    "don't want to live",
+    "want to kill myself"
   ]
 }

@@ -1,4 +1,6 @@
-const CACHE_NAME = 'spell-v2';
+// v3: index.html changed materially (inlined filter, CSP, mic lifecycle).
+// Bump forces a clean install for returning visitors.
+const CACHE_NAME = 'spell-v3';
 const SHELL = ['./index.html', './blocked-words.json'];
 
 self.addEventListener('install', (e) => {
